@@ -1,15 +1,12 @@
 name: PR Diff Summary & Auto Review
-# Workflow adı. GitHub Actions arayüzünde bu isimle görünür.
 
 on:
   pull_request:
     types: [opened, reopened, synchronize]
-# PR açıldığında, yeniden açıldığında veya üzerine yeni commit push edildiğinde tetiklenir.
 
 jobs:
   ai-review:
     runs-on: ubuntu-latest
-# Bu iş ubuntu-latest çalıştırıcısı üzerinde çalışır.
 
     steps:
       - name: Checkout repository
@@ -17,45 +14,47 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: true
-# Repo'yu tamamen çekmek için fetch-depth: 0 kullanılır.
-# Böylece PR diff'i hesaplamak için tüm gerekli git geçmişi elde edilir.
-# persist-credentials: true, GitHub token'ının sonraki adımlarda kullanılmasına izin verir.
 
       - name: Get changed files
         id: diff
         run: |
+          # Base branch'i fetch et
           git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          
+          # Değişen dosyaları al
           CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+          
+          # GitHub Output'a güvenli şekilde yaz (Multiline support)
           echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
           printf '%s\n' "$CHANGED" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
+          
+          # İstatistikleri hesapla
           TOTAL=$(printf '%s\n' "$CHANGED" | sed '/^\s*$/d' | wc -l | tr -d ' ')
           PY_FILES=$(printf '%s\n' "$CHANGED" | grep -E '\.py$' | sed '/^\s*$/d' | wc -l | tr -d ' ')
+          
           echo "total_files=$TOTAL" >> "$GITHUB_OUTPUT"
           echo "python_files=$PY_FILES" >> "$GITHUB_OUTPUT"
-# PR base branch'ini fetch eder.
-# Değişen dosyaları `git diff --name-only` ile listeler.
-# Çok satırlı çıktıyı $GITHUB_OUTPUT içine EOF ile yazar.
-# Toplam dosya sayısını ve Python dosyası sayısını hesaplar.
-# Bu değerler bir sonraki adıma output olarak aktarılır.
 
       - name: Comment PR with summary
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           FILES="${{ steps.diff.outputs.changed_files }}"
           TOTAL="${{ steps.diff.outputs.total_files }}"
           PY_FILES="${{ steps.diff.outputs.python_files }}"
 
-          if [ -z "$FILES" ]; then
-            BODY="### PR Diff Özeti\n\nBu PR için degisen dosya bulunamadi."
+          if [ -z "$FILES" ] || [ "$TOTAL" -eq 0 ]; then
+            BODY="### PR Diff Özeti\n\nBu PR için değişen dosya bulunamadı."
           else
-            FILE_LIST=$(printf '%s\n' "$FILES" | sed '/^\s*$/d' | awk '{print "- " $0}')
-            BODY="### PR Diff Özeti\n\n**Degisen dosyalar (${TOTAL})**:\n${FILE_LIST}\n\n- Python dosyasi sayisi: **${PY_FILES}**\n\n### Kontrol Listesi\n- [ ] Degisen dosya listesi incelendi\n- [ ] Python dosyalari kontrol edildi\n- [ ] PR icin temel bilgiler aciklandi\n"
+            # Dosya listesini markdown formatına (madde işareti) çevir
+            FILE_LIST=$(echo "$FILES" | sed '/^\s*$/d' | awk '{print "- " $0}')
+            
+            # Yorum gövdesini oluştur
+            # printf kullanarak \n karakterlerinin düzgün işlenmesini sağlıyoruz
+            BODY=$(printf "### PR Diff Özeti\n\n**Değişen dosyalar (${TOTAL})**:\n${FILE_LIST}\n\n- Python dosyası sayısı: **${PY_FILES}**\n\n### Kontrol Listesi\n- [ ] Değişen dosya listesi incelendi\n- [ ] Python dosyaları kontrol edildi\n- [ ] PR için temel bilgiler açıklandı")
           fi
 
-          echo "$BODY" | gh pr comment --body -
-# Önceki adımın outputs değerlerini değişkenlere alır.
-# Eğer değişen dosya listesi boşsa özel bir mesaj hazırlar.
-# Değilse dosya listesini maddeleme formatına çevirir.
-# `gh pr comment --body -` ile PR üzerine yorum bırakır.
+          # 'could not determine current branch' hatasını önlemek için PR_NUMBER ve --body-file kullanıyoruz
+          echo -e "$BODY" | gh pr comment "$PR_NUMBER" --body-file -

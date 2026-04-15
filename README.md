@@ -49,26 +49,26 @@ python -m app.main
 
 ## Gorev Atama Tablosu
 
-| Participant | Gorev | Dosya | Zorluk |
-|-------------|-------|-------|--------|
-| Participant 1 | Linting (flake8) | [task-01](tasks/task-01-linting.md) | ⭐ |
-| Participant 2 | Format Check (black + isort) | [task-02](tasks/task-02-format-check.md) | ⭐ |
-| Participant 3 | Test Runner (pytest) | [task-03](tasks/task-03-tests.md) | ⭐ |
-| Participant 4 | Matrix Strategy (coklu Python) | [task-04](tasks/task-04-multi-python.md) | ⭐⭐ |
-| Participant 5 | Otomatik Issue Olusturma | [task-05](tasks/task-05-auto-issue.md) | ⭐⭐ |
-| Participant 6 | Welcome Bot | [task-06](tasks/task-06-welcome-bot.md) | ⭐⭐ |
-| Participant 7 | Security Scan (bandit) | [task-07](tasks/task-07-security-scan.md) | ⭐⭐ |
-| Participant 8 | Otomatik PR Label | [task-08](tasks/task-08-pr-label.md) | ⭐⭐ |
-| Participant 9 | Scheduled Health Check | [task-09](tasks/task-09-scheduled-health.md) | ⭐⭐ |
-| Participant 10 | PR Diff Ozeti + Review | [task-10](tasks/task-10-ai-review.md) | ⭐⭐⭐ |
-| Participant 11 | Docker Build | [task-11](tasks/task-11-build.md) | ⭐ |
-| Participant 12 | Dependency Caching | [task-12](tasks/task-12-caching.md) | ⭐⭐ |
-| Participant 13 | Artifact Upload/Download | [task-13](tasks/task-13-artifacts.md) | ⭐⭐ |
-| Participant 14 | Reusable Workflow | [task-14](tasks/task-14-reusable-workflow.md) | ⭐⭐⭐ |
-| Participant 15 | Environment & Secrets | [task-15](tasks/task-15-environments.md) | ⭐⭐⭐ |
-| Participant 16 | Custom Composite Action | [task-16](tasks/task-16-composite-action.md) | ⭐⭐⭐ |
-| Participant 17 | Concurrency Control | [task-17](tasks/task-17-concurrency.md) | ⭐⭐ |
-| Participant 18 | Branch Protection + Required Checks | [task-18](tasks/task-18-branch-protection.md) | ⭐⭐⭐ |
+| Durum | Participant | Gorev | Dosya | Zorluk |
+| ----- |-------------|-------|-------|--------|
+|| Participant 1 | Linting (flake8) | [task-01](tasks/task-01-linting.md) | ⭐ |
+|| Participant 2 | Format Check (black + isort) | [task-02](tasks/task-02-format-check.md) | ⭐ |
+|| Participant 3 | Test Runner (pytest) | [task-03](tasks/task-03-tests.md) | ⭐ |
+|| Participant 4 | Matrix Strategy (coklu Python) | [task-04](tasks/task-04-multi-python.md) | ⭐⭐ |
+|| Participant 5 | Otomatik Issue Olusturma | [task-05](tasks/task-05-auto-issue.md) | ⭐⭐ |
+|| Participant 6 | Welcome Bot | [task-06](tasks/task-06-welcome-bot.md) | ⭐⭐ |
+|| Participant 7 | Security Scan (bandit) | [task-07](tasks/task-07-security-scan.md) | ⭐⭐ |
+|| Participant 8 | Otomatik PR Label | [task-08](tasks/task-08-pr-label.md) | ⭐⭐ |
+|| Participant 9 | Scheduled Health Check | [task-09](tasks/task-09-scheduled-health.md) | ⭐⭐ |
+|🔵| Participant 10 | PR Diff Ozeti + Review | [task-10](tasks/task-10-ai-review.md) | ⭐⭐⭐ |
+|| Participant 11 | Docker Build | [task-11](tasks/task-11-build.md) | ⭐ |
+|| Participant 12 | Dependency Caching | [task-12](tasks/task-12-caching.md) | ⭐⭐ |
+|| Participant 13 | Artifact Upload/Download | [task-13](tasks/task-13-artifacts.md) | ⭐⭐ |
+|| Participant 14 | Reusable Workflow | [task-14](tasks/task-14-reusable-workflow.md) | ⭐⭐⭐ |
+|| Participant 15 | Environment & Secrets | [task-15](tasks/task-15-environments.md) | ⭐⭐⭐ |
+|| Participant 16 | Custom Composite Action | [task-16](tasks/task-16-composite-action.md) | ⭐⭐⭐ |
+|| Participant 17 | Concurrency Control | [task-17](tasks/task-17-concurrency.md) | ⭐⭐ |
+|| Participant 18 | Branch Protection + Required Checks | [task-18](tasks/task-18-branch-protection.md) | ⭐⭐⭐ |
 
 ## Onemli Notlar
 

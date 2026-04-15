@@ -1,0 +1,69 @@
+name: PR Diff Summary & Auto Review # Workflow'un GitHub panelindeki adı.
+
+on: # Bu iş akışını tetikleyen olaylar.
+  pull_request: # Bir Pull Request (PR) işlemi olduğunda çalışır.
+    types: [opened, reopened, synchronize] 
+    # opened: Yeni PR açıldığında.
+    # reopened: Kapatılmış bir PR tekrar açıldığında.
+    # synchronize: Mevcut PR'a yeni commit'ler eklendiğinde.
+
+jobs:
+  ai-review: # İşin (job) kimliği.
+    runs-on: ubuntu-latest # İşin en güncel Ubuntu sanal makinesinde çalışacağını belirtir.
+
+    steps: # İşin içindeki adımlar (sırasıyla çalışır).
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Kodun sanal makineye indirilmesini sağlar.
+        with:
+          fetch-depth: 0 # Tüm git geçmişini indirir (farkları hesaplamak için gereklidir).
+          persist-credentials: true # Git işlemlerinde kimlik bilgilerini saklar.
+
+      - name: Get changed files
+        id: diff # Bu adıma bir ID veriyoruz ki çıktılarına (outputs) sonraki adımlarda erişebilelim.
+        run: |
+          # Hedef branch'i (PR'ın birleşeceği dalı) fetch eder (bilgilerini getirir).
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          
+          # Hedef branch ile mevcut PR branch'i arasındaki dosya farklarını sadece isim olarak alır.
+          CHANGED=$(git diff --name-only "origin/${{ github.event.pull_request.base.ref }}...HEAD")
+          
+          # GitHub Output mekanizmasını kullanarak 'changed_files' değişkenini dışarıya aktarır.
+          # <<EOF yapısı, çok satırlı (multiline) verileri güvenli şekilde kaydetmek içindir.
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          printf '%s\n' "$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          
+          # İstatistikler:
+          # TOTAL: Toplam değişen dosya sayısı (boş satırlar silinerek sayılır).
+          TOTAL=$(printf '%s\n' "$CHANGED" | sed '/^\s*$/d' | wc -l | tr -d ' ')
+          
+          # PY_FILES: Sadece .py uzantılı olanların sayısı.
+          PY_FILES=$(printf '%s\n' "$CHANGED" | grep -E '\.py$' | sed '/^\s*$/d' | wc -l | tr -d ' ')
+          
+          # Hesaplanan sayısal verileri sonraki adımlar için çıktıya yazar.
+          echo "total_files=$TOTAL" >> "$GITHUB_OUTPUT"
+          echo "python_files=$PY_FILES" >> "$GITHUB_OUTPUT"
+
+      - name: Comment PR with summary
+        env: # Ortam değişkenleri (Gerekli yetki ve PR numarası).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Bir önceki adımdan (id: diff) gelen çıktıları değişkenlere atar.
+          FILES="${{ steps.diff.outputs.changed_files }}"
+          TOTAL="${{ steps.diff.outputs.total_files }}"
+          PY_FILES="${{ steps.diff.outputs.python_files }}"
+
+          if [ -z "$FILES" ] || [ "$TOTAL" -eq 0 ]; then
+            BODY="### PR Diff Özeti\n\nBu PR için değişen dosya bulunamadı."
+          else
+            # Ham dosya listesinin her satırının başına "- " ekleyerek Markdown listesi yapar.
+            FILE_LIST=$(echo "$FILES" | sed '/^\s*$/d' | awk '{print "- " $0}')
+            
+            # Dinamik bir yorum metni (BODY) oluşturur.
+            BODY=$(printf "### PR Diff Özeti\n\n**Değişen dosyalar (${TOTAL})**:\n${FILE_LIST}\n\n- Python dosyası sayısı: **${PY_FILES}**\n\n### Kontrol Listesi\n- [ ] Değişen dosya listesi incelendi\n- [ ] Python dosyaları kontrol edildi\n- [ ] PR için temel bilgiler açıklandı")
+          fi
+
+          # 'gh pr comment' komutuyla yorumu gönderir. 
+          # --body-file - parametresi, metni standart girdiden (echo) okumasını sağlar.
+          echo -e "$BODY" | gh pr comment "$PR_NUMBER" --body-file -
